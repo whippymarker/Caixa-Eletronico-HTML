@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador OS de Caixa</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #2c3e50; /* Cor de fundo escura para simular um OS */
+            color: #ecf0f1;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .os-container {
+            width: 800px;
+            height: 600px;
+            background-color: #34495e; /* Fundo principal do "OS" */
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .screen {
+            display: none; /* Todas as telas ficam ocultas por padrão */
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        /* ESTADO: REGISTRO DE PRODUTOS */
+        #register-screen {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-area {
+            display: flex;
+            gap: 20px;
+            height: 200px;
+            background-color: #2c3e50;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .image-display {
+            width: 40%;
+            background-color: #bdc3c7; /* Fundo cinza claro para imagem */
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+            font-size: 14px;
+            overflow: hidden;
+        }
+        .image-display img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .price-display {
+            width: 60%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            text-align: right;
+        }
+
+        .price-label {
+            font-size: 18px;
+            color: #95a5a6;
+        }
+
+        #current-price {
+            font-size: 48px;
+            font-weight: bold;
+            color: #2ecc71; /* Verde para o preço */
+        }
+
+        .scan-area {
+            background-color: #2c3e50;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        #product-code-input {
+            width: 100%;
+            padding: 10px;
+            font-size: 24px;
+            text-align: center;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            box-sizing: border-box;
+            background-color: #ecf0f1;
+            color: #333;
+        }
+
+        .total-area {
+            background-color: #2c3e50;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: right;
+            border-top: 1px solid #3498db;
+        }
+
+        #total-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #f1c40f; /* Amarelo para o total */
+        }
+        
+        .product-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            border: 1px solid #3498db;
+            padding: 5px;
+            background-color: #2c3e50;
+        }
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px dotted #7f8c8d;
+        }
+        
+        /* ESTADO: PAGAMENTO */
+        #payment-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background-color: #2c3e50;
+        }
+
+        #payment-screen h2 {
+            margin-bottom: 30px;
+            color: #3498db;
+        }
+
+        .payment-options button {
+            padding: 15px 30px;
+            font-size: 24px;
+            margin: 0 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .payment-options button:hover {
+            opacity: 0.9;
+        }
+
+        #cash-button {
+            background-color: #2ecc71; /* Verde para dinheiro */
+            color: #fff;
+        }
+
+        #card-button {
+            background-color: #e74c3c; /* Vermelho para cartão */
+            color: #fff;
+        }
+
+        /* ESTADO: DETALHES DO CARTÃO */
+        #card-details-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #2c3e50;
+        }
+
+        #card-details-screen h2 {
+            margin-bottom: 30px;
+            color: #e74c3c;
+        }
+
+        .card-input {
+            margin: 10px 0;
+            width: 300px;
+            padding: 10px;
+            font-size: 18px;
+            border: 1px solid #3498db;
+            border-radius: 5px;
+            background-color: #ecf0f1;
+            color: #333;
+        }
+
+        .action-message {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #f1c40f;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="os-container">
+        <div id="register-screen" class="screen" style="display: flex;">
+            <div class="product-area">
+                <div class="image-display">
+                    <img id="product-image" src="" alt="Imagem do Produto" style="display: none;">
+                    <span id="image-placeholder">Nenhum Produto</span>
+                </div>
+                <div class="price-display">
+                    <span class="price-label">Preço Unitário:</span>
+                    <span id="current-price">R$ 0,00</span>
+                </div>
+            </div>
+
+            <div class="product-list" id="product-list">
+                </div>
+
+            <div class="total-area">
+                <span class="price-label">TOTAL:</span>
+                <span id="total-value">R$ 0,00</span>
+            </div>
+            
+            <div class="scan-area">
+                <input type="text" id="product-code-input" placeholder="Digite o Código e tecle Enter">
+                <p class="action-message">Tecle **ALT** para ir para o Pagamento</p>
+            </div>
+        </div>
+
+        <div id="payment-screen" class="screen">
+            <h2>Modo de Pagamento</h2>
+            <div class="payment-options">
+                <button id="cash-button" onclick="selectPayment('cash')">DINHEIRO</button>
+                <button id="card-button" onclick="selectPayment('card')">CARTÃO DE CRÉDITO</button>
+            </div>
+            <p class="action-message">Selecione o método de pagamento</p>
+        </div>
+
+        <div id="card-details-screen" class="screen">
+            <h2>Pagamento com Cartão</h2>
+            <input type="text" class="card-input" id="card-number" placeholder="Número do Cartão">
+            <input type="password" class="card-input" id="card-password" placeholder="Senha">
+            <p class="action-message">Tecle **ENTER** para finalizar (simulação)</p>
+        </div>
+
+    </div>
+
+    <script>
+        // --- BASE DE DADOS SIMULADA ---
+        const products = {
+            '1001': { name: 'Refrigerante Cola 2L', price: 8.50, image: 'https://via.placeholder.com/200x200?text=Refrigerante' },
+            '1002': { name: 'Pacote de Arroz 5kg', price: 25.99, image: 'https://via.placeholder.com/200x200?text=Arroz' },
+            '1003': { name: 'Pão de Forma', price: 6.25, image: 'https://via.placeholder.com/200x200?text=Pao' },
+            '9999': { name: 'Item de Teste', price: 0.01, image: 'https://via.placeholder.com/200x200?text=Teste' }
+        };
+
+        // --- VARIÁVEIS DE ESTADO ---
+        let currentTotal = 0.00;
+        let currentState = 'register'; // 'register', 'payment', 'card_details'
+        let itemsList = [];
+
+        // --- ELEMENTOS DOM ---
+        const registerScreen = document.getElementById('register-screen');
+        const paymentScreen = document.getElementById('payment-screen');
+        const cardDetailsScreen = document.getElementById('card-details-screen');
+        const codeInput = document.getElementById('product-code-input');
+        const currentPriceDisplay = document.getElementById('current-price');
+        const totalValueDisplay = document.getElementById('total-value');
+        const productListDisplay = document.getElementById('product-list');
+        const productImage = document.getElementById('product-image');
+        const imagePlaceholder = document.getElementById('image-placeholder');
+        const cardNumberInput = document.getElementById('card-number');
+        const cardPasswordInput = document.getElementById('card-password');
+
+
+        // --- FUNÇÕES DE LÓGICA ---
+
+        // Função para formatar o valor para moeda brasileira
+        const formatCurrency = (value) => `R$ ${value.toFixed(2).replace('.', ',')}`;
+
+        // Atualiza a tela baseada no estado atual
+        function updateScreen() {
+            registerScreen.style.display = 'none';
+            paymentScreen.style.display = 'none';
+            cardDetailsScreen.style.display = 'none';
+
+            if (currentState === 'register') {
+                registerScreen.style.display = 'flex';
+                codeInput.focus();
+            } else if (currentState === 'payment') {
+                paymentScreen.style.display = 'flex';
+            } else if (currentState === 'card_details') {
+                cardDetailsScreen.style.display = 'flex';
+                cardNumberInput.focus();
+            }
+        }
+
+        // Adiciona um produto ao carrinho
+        function addItem(code) {
+            const product = products[code];
+            if (product) {
+                // Atualiza o display de produto unitário
+                currentPriceDisplay.textContent = formatCurrency(product.price);
+                productImage.src = product.image;
+                productImage.style.display = 'block';
+                imagePlaceholder.style.display = 'none';
+                
+                // Adiciona o item à lista e atualiza o total
+                currentTotal += product.price;
+                totalValueDisplay.textContent = formatCurrency(currentTotal);
+                
+                // Adiciona o item à lista visual
+                const itemDiv = document.createElement('div');
+                itemDiv.classList.add('product-item');
+                itemDiv.innerHTML = `<span>${product.name}</span><span>${formatCurrency(product.price)}</span>`;
+                productListDisplay.appendChild(itemDiv);
+
+                // Limpa o input
+                codeInput.value = '';
+
+            } else {
+                alert(`Produto com código ${code} não encontrado!`);
+                codeInput.value = '';
+            }
+        }
+
+        // Transição para a tela de Pagamento
+        function goToPayment() {
+            if (currentTotal <= 0) {
+                alert('Adicione pelo menos um produto (ou item de teste: 9999) para ir para o pagamento!');
+                return;
+            }
+            currentState = 'payment';
+            updateScreen();
+        }
+
+        // Seleção do método de pagamento
+        window.selectPayment = function(method) {
+            if (method === 'cash') {
+                // Simulação de pagamento em dinheiro: Volta para o registro
+                alert('Pagamento em Dinheiro Confirmado! Fechando pedido e dando troco.');
+                resetTransaction();
+            } else if (method === 'card') {
+                currentState = 'card_details';
+                updateScreen();
+            }
+        }
+        
+        // Finaliza o pagamento com cartão (simulação)
+        function finalizeCardPayment() {
+            // Lógica de validação simples
+            if (cardNumberInput.value.length < 16 || cardPasswordInput.value.length < 4) {
+                alert('Dados do cartão incompletos! (Simulação)');
+                return;
+            }
+
+            alert('Pagamento com Cartão Aprovado! Finalizando pedido.');
+            resetTransaction();
+        }
+
+        // Reseta o estado do caixa para uma nova transação
+        function resetTransaction() {
+            currentTotal = 0.00;
+            itemsList = [];
+            
+            // Atualiza o display
+            totalValueDisplay.textContent = formatCurrency(0.00);
+            currentPriceDisplay.textContent = formatCurrency(0.00);
+            productListDisplay.innerHTML = '';
+            productImage.style.display = 'none';
+            imagePlaceholder.style.display = 'block';
+            
+            // Volta para a tela de registro
+            currentState = 'register';
+            updateScreen();
+            cardNumberInput.value = '';
+            cardPasswordInput.value = '';
+        }
+
+
+        // --- LISTENERS DE EVENTOS ---
+
+        // 1. Listener para o input do código do produto (somente para adicionar item)
+        codeInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const code = codeInput.value.trim();
+                
+                if (currentState === 'register' && code) {
+                    // Adiciona o item se houver código
+                    addItem(code); 
+                }
+            }
+        });
+
+        // 2. NOVO: Listener global para a tecla ALT (transição para pagamento)
+        document.addEventListener('keydown', function(e) {
+            // Usamos 'keydown' no 'document' para pegar o evento em qualquer lugar da página.
+            if (e.altKey && currentState === 'register') {
+                // Previne o comportamento padrão do navegador (como abrir o menu)
+                e.preventDefault(); 
+                goToPayment();
+            }
+        });
+
+
+        // 3. Listener para o input de senha/cartão (finalizar pagamento com Enter)
+        cardPasswordInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && currentState === 'card_details') {
+                finalizeCardPayment();
+            }
+        });
+
+
+        // --- INICIALIZAÇÃO ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Garante que a primeira tela esteja correta ao carregar
+            resetTransaction(); 
+        });
+
+    </script>
+</body>
+</html>
