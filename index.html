@@ -229,7 +229,7 @@
             
             <div class="scan-area">
                 <input type="text" id="product-code-input" placeholder="Digite o Código e tecle Enter">
-                <p class="action-message">Tecle **ALT** para ir para o Pagamento</p>
+                <p class="action-message">Tecle **ALT** para Pagamento | Tecle **L** para Tabela de Produtos</p>
             </div>
         </div>
 
@@ -257,14 +257,14 @@
             '1001': { name: 'Refrigerante Cola 2L', price: 8.50, image: './images/refri.png' },
             '1002': { name: 'Pacote de Arroz 5kg', price: 25.99, image: './images/arroz.png' },
             '1003': { name: 'Pão de Forma', price: 6.25, image: './images/pao.png' },
-	    '1004': { name: 'Chupeta', price: 9.99, image: './images/chupeta.png' },
-	    '1005': { name: 'Cubo Mágico', price: 24.99, image: './images/cubo-magico.png' },
-	    '1006': { name: 'Fone de Ouvido', price: 80.50, image: './images/fone.png' },
-	    '1007': { name: 'Mamadeira', price: 5.50, image: './images/mamadeira.png' },
-	    '1008': { name: 'Pizza', price: 7.50, image: './images/pizza.png' },
-	    '1009': { name: 'Stitch', price: 50.00, image: './images/stitch.png' },
-	    '1010': { name: 'Urso', price: 12.00, image: './images/urso.png' },
-            '9999': { name: 'Item de Teste', price: 0.01, image: 'https://via.placeholder.com/200x200?text=Teste' }
+            '1004': { name: 'Chupeta', price: 9.99, image: './images/chupeta.png' },
+            '1005': { name: 'Cubo Mágico', price: 24.99, image: './images/cubo-magico.png' },
+            '1006': { name: 'Fone de Ouvido', price: 80.50, image: './images/fone.png' },
+            '1007': { name: 'Mamadeira', price: 5.50, image: './images/mamadeira.png' },
+            '1008': { name: 'Pizza', price: 7.50, image: './images/pizza.png' },
+            '1009': { name: 'Stitch', price: 50.00, image: './images/stitch.png' },
+            '1010': { name: 'Urso', price: 12.00, image: './images/urso.png' },
+            '9999': { name: 'Item de Teste', price: 0.01, image: 'https://via.placeholder.com/200x200/2ecc71/ffffff?text=TESTE' }
         };
 
         // Salva o banco de dados de produtos (para que a tabela.html possa acessá-lo)
@@ -274,9 +274,9 @@
         // --- VARIÁVEIS DE ESTADO ---
         let currentTotal = 0.00;
         let currentState = 'register'; 
-        let itemsList = []; // Lista para armazenar os produtos adicionados
+        let itemsList = []; 
 
-        // --- ELEMENTOS DOM (o restante permanece igual) ---
+        // --- ELEMENTOS DOM ---
         const registerScreen = document.getElementById('register-screen');
         const paymentScreen = document.getElementById('payment-screen');
         const cardDetailsScreen = document.getElementById('card-details-screen');
@@ -321,13 +321,13 @@
             totalValueDisplay.textContent = formatCurrency(currentTotal);
         }
         
-        // NOVO: Função para SALVAR o estado da transação
+        // Função para SALVAR o estado da transação
         function saveTransactionState() {
             localStorage.setItem('savedTotal', currentTotal);
             localStorage.setItem('savedItems', JSON.stringify(itemsList));
         }
 
-        // NOVO: Função para CARREGAR o estado da transação
+        // Função para CARREGAR o estado da transação (CORRIGIDA)
         function loadTransactionState() {
             const savedTotal = localStorage.getItem('savedTotal');
             const savedItemsJSON = localStorage.getItem('savedItems');
@@ -335,7 +335,11 @@
             if (savedTotal && savedItemsJSON) {
                 currentTotal = parseFloat(savedTotal);
                 itemsList = JSON.parse(savedItemsJSON);
-                renderItemsList(); // Renderiza os itens carregados
+                renderItemsList(); 
+                
+                // CORREÇÃO: Força o estado visual de volta para o registro
+                currentState = 'register'; 
+                updateScreen(); 
             }
         }
 
@@ -349,9 +353,9 @@
                 imagePlaceholder.style.display = 'none';
                 
                 currentTotal += product.price;
-                itemsList.push({ name: product.name, price: product.price }); // Adiciona à lista de estado
+                itemsList.push({ name: product.name, price: product.price }); 
 
-                renderItemsList(); // Renderiza a lista atualizada
+                renderItemsList(); 
                 codeInput.value = '';
                 saveTransactionState(); // Salva o novo estado
             } else {
@@ -389,7 +393,7 @@
             resetTransaction();
         }
 
-        // ALTERADO: Limpa o estado do LocalStorage ao resetar
+        // Limpa o estado do LocalStorage ao resetar
         function resetTransaction() {
             currentTotal = 0.00;
             itemsList = [];
@@ -417,7 +421,6 @@
         codeInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 const code = codeInput.value.trim();
-                
                 if (currentState === 'register' && code) {
                     addItem(code); 
                 }
@@ -432,11 +435,10 @@
             }
         });
 
-        // 3. NOVO: Listener para a tecla L (transição para a Tabela)
+        // 3. Listener para a tecla L (transição para a Tabela)
         document.addEventListener('keydown', function(e) {
-            // Verifica se é a tecla 'l' ou 'L' e se estamos na tela de registro
             if (e.key === 'l' && currentState === 'register') {
-                e.preventDefault(); // Impede o comportamento padrão da tecla
+                e.preventDefault(); 
                 saveTransactionState(); // Salva o estado ANTES de mudar a página
                 window.location.href = 'tabela.html'; // Redireciona para o subsite
             }
@@ -451,13 +453,13 @@
         });
 
 
-        // --- INICIALIZAÇÃO (continua igual) ---
+        // --- INICIALIZAÇÃO (CORRIGIDA) ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Carrega o estado salvo ou reseta
+            // Carrega o estado salvo
             if (localStorage.getItem('savedTotal')) {
-                loadTransactionState();
+                loadTransactionState(); 
             } else {
-                resetTransaction();
+                resetTransaction(); 
             }
         });
     </script>
